@@ -971,9 +971,11 @@ class Model {
         Description: this.soqlPrompt.value
       }).then(result => {
         if (result.result){
-          // Extract SOQL from the result
-          const soqlMatch = result.result.match(/<soql>(.*?)<\/soql>/);
-          const extractedSoql = soqlMatch ? soqlMatch[1] : result.result;
+          // Extract SOQL from the result - handle <soql> tags or markdown code fences
+          const soqlMatch = result.result.match(/<soql>([\s\S]*?)<\/soql>/);
+          let extractedSoql = soqlMatch ? soqlMatch[1] : result.result;
+          // Strip markdown code fences (e.g. ```soql\n...\n``` or ```\n...\n```)
+          extractedSoql = extractedSoql.replace(/^```[\w]*\n?/i, "").replace(/\n?```$/i, "").trim();
           this.updateCurrentTabQuery(extractedSoql);
           this.queryAutocompleteHandler();
           if (this.queryInput) {
